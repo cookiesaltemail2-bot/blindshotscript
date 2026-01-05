@@ -59,6 +59,7 @@ local Window = Rayfield:CreateWindow({
 })
 
 local BasicTab = Window:CreateTab("Basic", 4483362458)
+local MovementTab = Window:CreateTab("Movement", 4483362458)
 local MiscTab = Window:CreateTab("Misc", 4483362458)
 local DisableAntiButton = BasicTab:CreateButton({
 	Name = "Disable AntiCheat",
@@ -66,7 +67,7 @@ local DisableAntiButton = BasicTab:CreateButton({
 		local success, errormsg = pcall(function()
 			game.ReplicatedStorage:WaitForChild('Services'):WaitForChild('AntiCheatService'):Destroy()
 		end)
-		
+
 
 		task.wait(1)
 
@@ -107,75 +108,75 @@ local ESPToggle = BasicTab:CreateToggle({
 
 		local highlights = {}
 		local lockedChars = {}
-		
-			if Value == true then
-				for _, plr in ipairs(Players:GetPlayers()) do
-					if plr ~= LocalPlayer and plr.Character then
-						local char = plr.Character
 
-						-- === HIGHLIGHT ESP ===
-						if not highlights[plr] then
-							local hl = Instance.new("Highlight")
-							hl.Name = "ESP_Highlight"
-							hl.Adornee = char
-							hl.FillColor = Color3.fromRGB(255, 0, 0)
-							hl.FillTransparency = 0.5
-							hl.OutlineTransparency = 0
-							hl.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
-							hl.Parent = char
-							highlights[plr] = hl
-						end
+		if Value == true then
+			for _, plr in ipairs(Players:GetPlayers()) do
+				if plr ~= LocalPlayer and plr.Character then
+					local char = plr.Character
 
-						-- === LOCK TRANSPARENCY (ONCE) ===
-						if not lockedChars[char] then
-							lockedChars[char] = true
+					-- === HIGHLIGHT ESP ===
+					if not highlights[plr] then
+						local hl = Instance.new("Highlight")
+						hl.Name = "ESP_Highlight"
+						hl.Adornee = char
+						hl.FillColor = Color3.fromRGB(255, 0, 0)
+						hl.FillTransparency = 0.5
+						hl.OutlineTransparency = 0
+						hl.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+						hl.Parent = char
+						highlights[plr] = hl
+					end
 
-							for _, obj in ipairs(char:GetDescendants()) do
-								if obj:IsA("BasePart")
-									and obj.Name ~= "HumanoidRootPart"
-									and obj.Name ~= "hitbox" then
+					-- === LOCK TRANSPARENCY (ONCE) ===
+					if not lockedChars[char] then
+						lockedChars[char] = true
 
-									obj.Transparency = 0
-									obj:GetPropertyChangedSignal("Transparency"):Connect(function()
-										if obj.Transparency ~= 0 then
-											obj.Transparency = 0
-										end
-									end)
-								elseif obj:IsA("Beam") then
-									obj.Enabled = true
-									obj:GetPropertyChangedSignal("Enabled"):Connect(function()
-										if obj.Enabled == false then
-											obj.Enabled = true
-										end
-									end)
-								end
+						for _, obj in ipairs(char:GetDescendants()) do
+							if obj:IsA("BasePart")
+								and obj.Name ~= "HumanoidRootPart"
+								and obj.Name ~= "hitbox" then
+
+								obj.Transparency = 0
+								obj:GetPropertyChangedSignal("Transparency"):Connect(function()
+									if obj.Transparency ~= 0 then
+										obj.Transparency = 0
+									end
+								end)
+							elseif obj:IsA("Beam") then
+								obj.Enabled = true
+								obj:GetPropertyChangedSignal("Enabled"):Connect(function()
+									if obj.Enabled == false then
+										obj.Enabled = true
+									end
+								end)
 							end
-
-							char.DescendantAdded:Connect(function(obj)
-								if obj:IsA("BasePart")
-									and obj.Name ~= "HumanoidRootPart"
-									and obj.Name ~= "hitbox" then
-
-									obj.Transparency = 0
-									obj:GetPropertyChangedSignal("Transparency"):Connect(function()
-										if obj.Transparency ~= 0 then
-											obj.Transparency = 0
-										end
-									end)
-								end
-							end)
 						end
+
+						char.DescendantAdded:Connect(function(obj)
+							if obj:IsA("BasePart")
+								and obj.Name ~= "HumanoidRootPart"
+								and obj.Name ~= "hitbox" then
+
+								obj.Transparency = 0
+								obj:GetPropertyChangedSignal("Transparency"):Connect(function()
+									if obj.Transparency ~= 0 then
+										obj.Transparency = 0
+									end
+								end)
+							end
+						end)
 					end
 				end
-
-				-- === CLEANUP WHEN TOGGLED OFF ===
-				for _, hl in pairs(highlights) do
-					if hl then hl:Destroy() end
-				end
-				table.clear(highlights)
-				table.clear(lockedChars)
 			end
-			task.wait(1)
+
+			-- === CLEANUP WHEN TOGGLED OFF ===
+			for _, hl in pairs(highlights) do
+				if hl then hl:Destroy() end
+			end
+			table.clear(highlights)
+			table.clear(lockedChars)
+		end
+		task.wait(1)
 	end,
 })
 local AimbotType = BasicTab:CreateDropdown({
@@ -213,7 +214,7 @@ local AimbotToggle = BasicTab:CreateToggle({
 					local targetHRP = getclosesthrp()
 					local hrp = game.Players.LocalPlayer.Character.HumanoidRootPart
 					if not targetHRP then return end
-					
+
 					local offset = targetHRP.CFrame.RightVector * 2
 
 					local dir = (targetHRP.Position) - hrp.Position
@@ -224,12 +225,12 @@ local AimbotToggle = BasicTab:CreateToggle({
 
 				elseif mode == "Chosen Player" then
 					local chosen = LockOnPlayer.CurrentOption[1]
-					
+
 					local targetHRP = game.Players:FindFirstChild(chosen).Character.HumanoidRootPart
 					local hrp = game.Players.LocalPlayer.Character.HumanoidRootPart
 					if not targetHRP then return end
-					
-					
+
+
 					local dir = (targetHRP.Position) - hrp.Position
 					dir = Vector3.new(dir.X, 0, dir.Z)
 
@@ -251,6 +252,64 @@ local InfiniteYieldButton = MiscTab:CreateButton({
 	Name = "Infinite Yield",
 	Callback = function()
 		loadstring(game:HttpGet(('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'),true))()
+	end,
+})
+local SolaraHubButton = MiscTab:CreateButton({
+	Name = "Solara Hub",
+	Callback = function()
+		loadstring(game:HttpGet("https://pastefy.app/Wfe784Xn/raw"))()
+	end,
+})
+local SpeedBoost = MovementTab:CreateSlider({
+	Name = "Walk Speed",
+	Range = {0, 100},
+	Increment = 10,
+	Suffix = "WS",
+	CurrentValue = 16,
+	Flag = "WalkSpeed", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
+	Callback = function(Value)
+
+	end,
+})
+local WalkSpeedToggle = MovementTab:CreateToggle({
+	Name = "Enable WalkSpeed",
+	CurrentValue = false,
+	Flag = "WalkSpeedToggle",
+	Callback = function(Value)
+		task.spawn(function()
+			if Value == true then
+				lp.Character.Humanoid.WalkSpeed = SpeedBoost.CurrentValue
+			else
+				lp.Character.Humanoid.WalkSpeed = 16
+			end
+			task.wait(1)
+		end)
+	end,
+})
+local JumpBoost = MovementTab:CreateSlider({
+	Name = "Jump Height",
+	Range = {0, 50},
+	Increment = 10,
+	Suffix = "JH",
+	CurrentValue = 7.2,
+	Flag = "JumpHeight", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
+	Callback = function(Value)
+
+	end,
+})
+local JumpHeightToggle = MovementTab:CreateToggle({
+	Name = "Enable JumpHeight",
+	CurrentValue = false,
+	Flag = "JumpHeight",
+	Callback = function(Value)
+		task.spawn(function()
+			if Value == true then
+				lp.Character.Humanoid.JumpHeight = JumpBoost.CurrentValue
+			else
+				lp.Character.Humanoid.JumpHeight = 7.2
+			end
+			task.wait(1)
+		end)
 	end,
 })
 
