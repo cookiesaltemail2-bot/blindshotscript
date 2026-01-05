@@ -107,7 +107,6 @@ local ESPToggle = BasicTab:CreateToggle({
 		local highlights = {}
 		local lockedChars = {}
 		
-		while true do
 			if Value == true then
 				for _, plr in ipairs(Players:GetPlayers()) do
 					if plr ~= LocalPlayer and plr.Character then
@@ -176,7 +175,6 @@ local ESPToggle = BasicTab:CreateToggle({
 				table.clear(lockedChars)
 			end
 			task.wait(1)
-		end
 	end,
 })
 local AimbotType = BasicTab:CreateDropdown({
