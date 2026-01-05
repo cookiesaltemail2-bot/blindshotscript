@@ -1,0 +1,274 @@
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+local lp = game.Players.LocalPlayer
+
+local function getclosesthrp()
+	local closest, shortest = nil, math.huge
+
+	for _, plr in ipairs(game.Players:GetPlayers()) do
+		if plr ~= game.Players.LocalPlayer and plr.Character then
+			local hrp2 = plr.Character:FindFirstChild("HumanoidRootPart")
+			if hrp2 then
+				local dist = (game.Players.LocalPlayer.Character.HumanoidRootPart.Position - hrp2.Position).Magnitude
+				if dist < shortest then
+					shortest = dist
+					closest = hrp2
+				end
+			end
+		end
+	end
+
+	return closest
+end
+
+local Window = Rayfield:CreateWindow({
+	Name = "Blind Shot by Sleepy",
+	Icon = 0, -- Icon in Topbar. Can use Lucide Icons (string) or Roblox Image (number). 0 to use no icon (default).
+	LoadingTitle = "Rayfield Interface Suite",
+	LoadingSubtitle = "by Sleepy",
+	ShowText = "Rayfield", -- for mobile users to unhide rayfield, change if you'd like
+	Theme = "Default", -- Check https://docs.sirius.menu/rayfield/configuration/themes
+
+	ToggleUIKeybind = "K", -- The keybind to toggle the UI visibility (string like "K" or Enum.KeyCode)
+
+	DisableRayfieldPrompts = false,
+	DisableBuildWarnings = false, -- Prevents Rayfield from warning when the script has a version mismatch with the interface
+
+	ConfigurationSaving = {
+		Enabled = true,
+		FolderName = nil, -- Create a custom folder for your hub/game
+		FileName = "Big Hub"
+	},
+
+	Discord = {
+		Enabled = false, -- Prompt the user to join your Discord server if their executor supports it
+		Invite = "noinvitelink", -- The Discord invite code, do not include discord.gg/. E.g. discord.gg/ ABCD would be ABCD
+		RememberJoins = true -- Set this to false to make them join the discord every time they load it up
+	},
+
+	KeySystem = false, -- Set this to true to use our key system
+	KeySettings = {
+		Title = "Untitled",
+		Subtitle = "Key System",
+		Note = "No method of obtaining the key is provided", -- Use this to tell the user how to get a key
+		FileName = "Key", -- It is recommended to use something unique as other scripts using Rayfield may overwrite your key file
+		SaveKey = true, -- The user's key will be saved, but if you change the key, they will be unable to use your script
+		GrabKeyFromSite = false, -- If this is true, set Key below to the RAW site you would like Rayfield to get the key from
+		Key = {"Hello"} -- List of keys that will be accepted by the system, can be RAW file links (pastebin, github etc) or simple strings ("hello","key22")
+	}
+})
+
+local BasicTab = Window:CreateTab("Basic", 4483362458)
+local DisableAntiButton = BasicTab:CreateButton({
+	Name = "Disable AntiCheat",
+	Callback = function()
+		local success, errormsg = pcall(function()
+			game.ReplicatedStorage:WaitForChild('Services'):WaitForChild('AntiCheatService'):Destroy()
+		end)
+		
+
+		task.wait(1)
+
+		if success then
+			if not game.ReplicatedStorage:WaitForChild('Services'):WaitForChild('AntiCheatService') then
+
+				Rayfield:Notify({
+					Title = "AntiCheat Disable",
+					Content = "Successfully disabled anticheat!",
+					Duration = 6.5,
+					Image = 4483362458,
+				})
+			else
+				Rayfield:Notify({
+					Title = "AntiCheat Disable",
+					Content = "Failed disabled anticheat. Reason: "..errormsg,
+					Duration = 6.5,
+					Image = 4483362458,
+				})
+			end
+		else
+			Rayfield:Notify({
+				Title = "AntiCheat Disable",
+				Content = "Failed disabled anticheat. Reason: "..errormsg,
+				Duration = 6.5,
+				Image = 4483362458,
+			})
+		end
+	end,
+})
+local ESPToggle = BasicTab:CreateToggle({
+	Name = "ESP",
+	CurrentValue = false,
+	Flag = "ESP",
+	Callback = function(Value)
+		local Players = game:GetService("Players")
+		local LocalPlayer = Players.LocalPlayer
+
+		local highlights = {}
+		local lockedChars = {}
+		
+		while true do
+			if Value == true then
+				for _, plr in ipairs(Players:GetPlayers()) do
+					if plr ~= LocalPlayer and plr.Character then
+						local char = plr.Character
+
+						-- === HIGHLIGHT ESP ===
+						if not highlights[plr] then
+							local hl = Instance.new("Highlight")
+							hl.Name = "ESP_Highlight"
+							hl.Adornee = char
+							hl.FillColor = Color3.fromRGB(255, 0, 0)
+							hl.FillTransparency = 0.5
+							hl.OutlineTransparency = 0
+							hl.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+							hl.Parent = char
+							highlights[plr] = hl
+						end
+
+						-- === LOCK TRANSPARENCY (ONCE) ===
+						if not lockedChars[char] then
+							lockedChars[char] = true
+
+							for _, obj in ipairs(char:GetDescendants()) do
+								if obj:IsA("BasePart")
+									and obj.Name ~= "HumanoidRootPart"
+									and obj.Name ~= "hitbox" then
+
+									obj.Transparency = 0
+									obj:GetPropertyChangedSignal("Transparency"):Connect(function()
+										if obj.Transparency ~= 0 then
+											obj.Transparency = 0
+										end
+									end)
+								elseif obj:IsA("Beam") then
+									obj.Enabled = true
+									obj:GetPropertyChangedSignal("Enabled"):Connect(function()
+										if obj.Enabled == false then
+											obj.Enabled = true
+										end
+									end)
+								end
+							end
+
+							char.DescendantAdded:Connect(function(obj)
+								if obj:IsA("BasePart")
+									and obj.Name ~= "HumanoidRootPart"
+									and obj.Name ~= "hitbox" then
+
+									obj.Transparency = 0
+									obj:GetPropertyChangedSignal("Transparency"):Connect(function()
+										if obj.Transparency ~= 0 then
+											obj.Transparency = 0
+										end
+									end)
+								end
+							end)
+						end
+					end
+				end
+
+				-- === CLEANUP WHEN TOGGLED OFF ===
+				for _, hl in pairs(highlights) do
+					if hl then hl:Destroy() end
+				end
+				table.clear(highlights)
+				table.clear(lockedChars)
+			end
+			task.wait(1)
+		end
+	end,
+})
+local AimbotType = BasicTab:CreateDropdown({
+	Name = "Aimbot Type",
+	Options = {"Closest Player","Chosen Player"},
+	CurrentOption = {"Closest Player"},
+	MultipleOptions = false,
+	Flag = "AimbotType", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
+	Callback = function(Options)
+
+	end,
+})
+local LockOnPlayer = BasicTab:CreateDropdown({
+	Name = "Player To Aimbot",
+	Options = {},
+	CurrentOption = {},
+	MultipleOptions = false,
+	Flag = "LockONPlayer", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
+	Callback = function(Options)
+		AimbotType:Set({"Chosen Player"}) -- "Option 2" will now be selected
+	end,
+})
+local aimbotConnection
+local AimbotToggle = BasicTab:CreateToggle({
+	Name = "Aimbot",
+	CurrentValue = false,
+	Flag = "Aimbot",
+	Callback = function(Value)
+
+		if Value then
+			aimbotConnection = game["Run Service"].RenderStepped:Connect(function()
+				local mode = AimbotType.CurrentOption[1]
+
+				if mode == "Closest Player" then
+					local targetHRP = getclosesthrp()
+					local hrp = game.Players.LocalPlayer.Character.HumanoidRootPart
+					if not targetHRP then return end
+					
+					local offset = targetHRP.CFrame.RightVector * 2
+
+					local dir = (targetHRP.Position) - hrp.Position
+					dir = Vector3.new(dir.X, 0, dir.Z)
+
+					local targetCF = CFrame.lookAt(hrp.Position, hrp.Position + dir)
+					hrp.CFrame = hrp.CFrame:Lerp(targetCF, 1)
+
+				elseif mode == "Chosen Player" then
+					local chosen = LockOnPlayer.CurrentOption[1]
+					
+					local targetHRP = game.Players:FindFirstChild(chosen).Character.HumanoidRootPart
+					local hrp = game.Players.LocalPlayer.Character.HumanoidRootPart
+					if not targetHRP then return end
+					
+					
+					local dir = (targetHRP.Position) - hrp.Position
+					dir = Vector3.new(dir.X, 0, dir.Z)
+
+					local targetCF = CFrame.lookAt(hrp.Position, hrp.Position + dir)
+					hrp.CFrame = hrp.CFrame:Lerp(targetCF, 1)
+
+				end
+			end)
+
+		else
+			if aimbotConnection then
+				aimbotConnection:Disconnect()
+				aimbotConnection = nil
+			end
+		end
+	end,
+})
+
+task.spawn(function()
+	task.wait(1)
+
+	local Players = game:GetService("Players")
+	local lp = Players.LocalPlayer
+
+	local function refreshDropdown()
+		local options = {}
+
+		for _, plr in ipairs(Players:GetPlayers()) do
+			if plr ~= lp then
+				table.insert(options, plr.Name)
+			end
+		end
+
+		LockOnPlayer:Refresh(options)
+	end
+
+	refreshDropdown()
+
+	Players.PlayerAdded:Connect(refreshDropdown)
+	Players.PlayerRemoving:Connect(refreshDropdown)
+end)
