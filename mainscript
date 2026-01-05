@@ -59,6 +59,7 @@ local Window = Rayfield:CreateWindow({
 })
 
 local BasicTab = Window:CreateTab("Basic", 4483362458)
+local MiscTab = Window:CreateTab("Misc", 4483362458)
 local DisableAntiButton = BasicTab:CreateButton({
 	Name = "Disable AntiCheat",
 	Callback = function()
@@ -244,6 +245,12 @@ local AimbotToggle = BasicTab:CreateToggle({
 				aimbotConnection = nil
 			end
 		end
+	end,
+})
+local InfiniteYieldButton = MiscTab:CreateButton({
+	Name = "Infinite Yield",
+	Callback = function()
+		loadstring(game:HttpGet(('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'),true))()
 	end,
 })
 
